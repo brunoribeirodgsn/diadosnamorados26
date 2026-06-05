@@ -187,6 +187,31 @@ function WordGame({ game }) {
   );
 }
 
+function AppChrome() {
+  return (
+    <>
+      <div className="gift-topbar" aria-hidden="true">
+        <span className="gift-close">×</span>
+        <span className="gift-pill">Wrapped</span>
+      </div>
+      <nav className="gift-bottom-nav" aria-label="Navegação do presente">
+        <a href="#s-hero" className="gift-nav-item">
+          <span className="gift-nav-icon">⌂</span>
+          <span>Início</span>
+        </a>
+        <a href="#s-timeline" className="gift-nav-item">
+          <span className="gift-nav-icon">⌕</span>
+          <span>Jornada</span>
+        </a>
+        <a href="#s-gallery" className="gift-nav-item">
+          <span className="gift-nav-icon">▥</span>
+          <span>Fotos</span>
+        </a>
+      </nav>
+    </>
+  );
+}
+
 // ── Página principal ──────────────────────────────────────────────
 export default function Home() {
   const [data, setData]             = useState(null);
@@ -358,6 +383,14 @@ export default function Home() {
     catch { return str; }
   };
 
+  const fmtShort = (str) => {
+    if (!str) return '';
+    try { return new Date(str + 'T12:00:00').toLocaleDateString('pt-BR'); }
+    catch { return str; }
+  };
+
+  const giverName = data?.name2 || data?.name1 || 'Alguém';
+
   if (!data) return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', flexDirection:'column', gap: 16, background:'#03030f', color:'#a78bfa' }}>
       <div style={{ fontSize:'3rem', animation:'spin 1s linear infinite' }}>💫</div>
@@ -373,12 +406,14 @@ export default function Home() {
       {/* Entrada */}
       {!entered && (
         <div className="entry-screen">
+          <AppChrome />
           <div className="entry-content">
-            <div className="entry-ring"><div className="entry-ring-inner"><span className="entry-icon">💖</span></div></div>
-            <h1 className="entry-title">{data.entry_title || 'Nossa História ✨'}</h1>
-            <p className="entry-subtitle">{data.entry_subtitle || 'Um presente especial criado com amor'}</p>
+            <h1 className="entry-title">
+              {giverName} preparou um <span>presente</span> especial!
+            </h1>
+            <p className="entry-subtitle">Um momento único feito com carinho para celebrar a jornada de vocês</p>
             <button className="enter-btn" onClick={enter}>
-              <span>Ver Nossa História</span><span>→</span>
+              <span>Ver Presente</span>
             </button>
           </div>
         </div>
@@ -387,6 +422,7 @@ export default function Home() {
       {/* Conteúdo principal */}
       {entered && (
         <div className="main-wrap">
+          <AppChrome />
 
           {/* Player */}
           {data.music_url && (
@@ -437,22 +473,26 @@ export default function Home() {
           {/* Linha do Tempo */}
           {timeline.length > 0 && (
             <section className="section timeline-section" id="s-timeline">
-              <h2 className="section-title"><span className="stitle-icon">📖</span>Nossa Linha do Tempo</h2>
+              <div className="journey-heading">
+                <h2>Nossa Jornada</h2>
+                <p>Cada momento que nos trouxe até aqui.</p>
+              </div>
               <div className="timeline-container">
                 {timeline.map((item, idx) => (
-                  <div key={item.id} className={`timeline-entry entry-${idx % 2 === 0 ? 'left' : 'right'}`}>
-                    <div className="tl-dot">{item.emoji || '⭐'}</div>
-                    <div className="tl-spacer" />
-                    <div className="tl-card">
+                  <div key={item.id} className={`timeline-entry entry-${idx % 2 === 0 ? 'media-left' : 'media-right'}`}>
+                    <div className="tl-media">
                       {item.photo_url && (
                         <div className="tl-polaroid">
                           <img src={item.photo_url} alt={item.photo_caption || item.title} loading="lazy" />
-                          {item.photo_caption && <p className="tl-polaroid-caption">{item.photo_caption}</p>}
+                          <p className="tl-polaroid-caption">{item.photo_caption || item.title}</p>
                         </div>
                       )}
-                      <div className="tl-date">{fmt(item.date_event)}</div>
+                    </div>
+                    <div className="tl-dot" aria-hidden="true">♥</div>
+                    <div className="tl-copy">
+                      <div className="tl-date">{fmtShort(item.date_event)}</div>
                       <div className="tl-title">{item.title}</div>
-                      <div className="tl-desc">{item.description}</div>
+                      {item.description && <div className="tl-desc">{item.description}</div>}
                     </div>
                   </div>
                 ))}
