@@ -226,6 +226,90 @@ function MapLocationItem({ loc, idx, updateMap, removeMapLoc }) {
 }
 
 // ── Página Admin ──────────────────────────────────────────────────
+function AdminPhonePreview({ tab, cfg, timeline, gallery, wordGame, mapLocs }) {
+  const cover = gallery.find(p => p.src)?.src || timeline.find(t => t.photo_url)?.photo_url || mapLocs.find(m => m.photo_url)?.photo_url || '';
+  const firstTimeline = timeline[0] || {};
+  const firstMap = mapLocs[0] || {};
+
+  return (
+    <aside className="adm-preview-shell">
+      <div className="adm-preview-phone">
+        <div className="adm-preview-bars"><span /><span /><span /><span /></div>
+        <div className="adm-preview-top">
+          <span>v</span>
+          <strong>A nossa historia</strong>
+          <span>...</span>
+        </div>
+
+        {tab === 'casal' && (
+          <div className="adm-preview-screen teal">
+            {cover ? <img className="adm-preview-cover" src={cover} alt="" /> : <div className="adm-preview-cover empty">♥</div>}
+            <h3>{cfg?.name1 || 'Ela'} & {cfg?.name2 || 'Ele'}</h3>
+            <p>{cfg?.hero_tagline || 'A nossa historia, do nosso jeito.'}</p>
+            <div className="adm-preview-play">▶</div>
+          </div>
+        )}
+
+        {tab === 'musica' && (
+          <div className="adm-preview-screen teal">
+            {cover ? <img className="adm-preview-cover" src={cover} alt="" /> : <div className="adm-preview-cover empty">♪</div>}
+            <h3>{cfg?.music_song || 'Nossa musica'}</h3>
+            <p>{cfg?.music_artist || 'A trilha de voces'}</p>
+            <div className="adm-preview-progress"><span /></div>
+            <div className="adm-preview-controls">↝ |‹ ▶ ›| ↜</div>
+          </div>
+        )}
+
+        {tab === 'timeline' && (
+          <div className="adm-preview-screen night">
+            <h3>Nossa Jornada</h3>
+            <div className="adm-preview-timeline">
+              {firstTimeline.photo_url && <img src={firstTimeline.photo_url} alt="" />}
+              <span>♥</span>
+              <p>{firstTimeline.title || 'Seu primeiro marco aparece aqui'}</p>
+            </div>
+          </div>
+        )}
+
+        {tab === 'galeria' && (
+          <div className="adm-preview-screen night">
+            <h3>Galeria</h3>
+            <div className="adm-preview-grid">
+              {gallery.slice(0, 4).map((photo, i) => photo.src ? <img key={i} src={photo.src} alt="" /> : <span key={i} />)}
+              {gallery.length === 0 && <><span /><span /><span /><span /></>}
+            </div>
+          </div>
+        )}
+
+        {tab === 'jogo' && (
+          <div className="adm-preview-screen night">
+            <h3>{wordGame?.title || 'Jogo de Palavras'}</h3>
+            <p>{wordGame?.hint || 'A dica aparece aqui.'}</p>
+            <div className="adm-preview-word">{(wordGame?.word || 'AMOR').split('').map((letter, i) => <span key={i}>{i < 2 ? letter : ''}</span>)}</div>
+          </div>
+        )}
+
+        {tab === 'mapa' && (
+          <div className="adm-preview-screen map">
+            <h3>Nossa jornada no mapa</h3>
+            <div className="adm-preview-pin">♥</div>
+            <p>{firstMap.nickname || firstMap.name || 'Seu lugar especial'}</p>
+          </div>
+        )}
+
+        {(tab === 'mensagem' || tab === 'estrelas') && (
+          <div className="adm-preview-screen night">
+            <h3>{tab === 'mensagem' ? 'Mensagem Especial' : 'Mapa das Estrelas'}</h3>
+            <div className="adm-preview-orbit">✦</div>
+            <p>{tab === 'mensagem' ? (cfg?.message_signature || 'Com todo o meu amor') : (cfg?.star_title || 'O ceu do nosso dia')}</p>
+          </div>
+        )}
+      </div>
+      <p className="adm-preview-caption">Preview em tempo real do presente</p>
+    </aside>
+  );
+}
+
 export default function Admin() {
   const [authed,  setAuthed]  = useState(false);
   const [pwd,     setPwd]     = useState('');
@@ -382,6 +466,10 @@ export default function Admin() {
     { id:'estrelas', label:'⭐ Estrelas' },
   ];
 
+  const tabIndex = Math.max(0, tabs.findIndex(t => t.id === tab));
+  const goPrev = () => setTab(tabs[Math.max(0, tabIndex - 1)].id);
+  const goNext = () => setTab(tabs[Math.min(tabs.length - 1, tabIndex + 1)].id);
+
   return (
     <>
       {/* Header */}
@@ -402,7 +490,8 @@ export default function Admin() {
         </div>
       </header>
 
-      <div className="adm-body">
+      <div className="adm-body adm-wizard-shell">
+        <main className="adm-editor">
 
         {/* ── Tab: Casal ── */}
         {tab === 'casal' && (
@@ -708,6 +797,13 @@ export default function Admin() {
           </div>
         )}
 
+          <div className="adm-step-actions">
+            <button className="btn btn-ghost" onClick={goPrev} disabled={tabIndex === 0}>← Voltar</button>
+            <span>Etapa {tabIndex + 1} de {tabs.length}</span>
+            <button className="btn btn-ghost" onClick={goNext} disabled={tabIndex === tabs.length - 1}>Continuar →</button>
+          </div>
+        </main>
+        <AdminPhonePreview tab={tab} cfg={cfg} timeline={timeline} gallery={gallery} wordGame={wordGame} mapLocs={mapLocs} />
       </div>
 
       {/* Toasts */}
