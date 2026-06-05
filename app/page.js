@@ -297,12 +297,31 @@ export default function Home() {
       }).addTo(m);
       const bounds = [];
       const icon = L.divIcon({
-        html: '<div style="font-size:24px;filter:drop-shadow(0 2px 6px rgba(167,139,250,0.8))">📍</div>',
-        className: '', iconSize: [30, 30], iconAnchor: [15, 30],
+        html: '<div class="map-pulse-pin"><div class="map-pin-inner">💚</div><div class="map-pin-ring"></div></div>',
+        className: '', iconSize: [32, 32], iconAnchor: [16, 32],
       });
       mapLocs.forEach(loc => {
         const marker = L.marker([loc.lat, loc.lng], { icon }).addTo(m);
-        marker.bindPopup(`<b>${loc.name}</b><br/>${loc.description || ''}${loc.date_visit ? `<br/><small>${loc.date_visit}</small>` : ''}`);
+        const popupContent = `
+          <div class="map-popup-polaroid">
+            ${loc.photo_url ? `
+              <div class="map-pop-polaroid-card">
+                <div class="map-pop-polaroid-img-wrap">
+                  <img src="${loc.photo_url}" alt="${loc.photo_caption || ''}" />
+                </div>
+                ${loc.photo_caption ? `<p class="map-pop-polaroid-caption">${loc.photo_caption}</p>` : ''}
+                ${loc.date_visit ? `<p class="map-pop-polaroid-date">${fmt(loc.date_visit)}</p>` : ''}
+              </div>
+            ` : ''}
+            <div class="map-pop-details">
+              <h3 class="map-pop-title">${loc.nickname || 'Nossa Parada'}</h3>
+              ${loc.nickname ? `<p class="map-pop-address">📍 ${loc.name.split(',')[0]}</p>` : ''}
+              ${loc.description ? `<p class="map-pop-desc">${loc.description}</p>` : ''}
+              ${!loc.photo_url && loc.date_visit ? `<p class="map-pop-date-only">${fmt(loc.date_visit)}</p>` : ''}
+            </div>
+          </div>
+        `;
+        marker.bindPopup(popupContent, { maxWidth: 240, minWidth: 200, className: 'custom-leaflet-popup' });
         bounds.push([loc.lat, loc.lng]);
       });
       if (bounds.length > 0) {
@@ -490,7 +509,8 @@ export default function Home() {
                     <div key={loc.id} className="map-location-item" onClick={() => flyToLoc(loc)}>
                       <span className="map-loc-pin">📍</span>
                       <div className="map-loc-info">
-                        <div className="map-loc-name">{loc.name}</div>
+                        <div className="map-loc-name">{loc.nickname || loc.name}</div>
+                        {loc.nickname && <div className="map-loc-address">📍 {loc.name}</div>}
                         {loc.description && <div className="map-loc-desc">{loc.description}</div>}
                         {loc.date_visit && <div className="map-loc-date">{fmt(loc.date_visit)}</div>}
                       </div>

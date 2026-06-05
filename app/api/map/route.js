@@ -20,21 +20,27 @@ export async function POST(request) {
     if (body.id) {
       await sql`
         UPDATE map_locations SET
-          name        = ${body.name ?? ''},
-          lat         = ${body.lat ?? 0},
-          lng         = ${body.lng ?? 0},
-          description = ${body.description ?? ''},
-          date_visit  = ${body.date_visit ?? ''},
-          sort_order  = ${body.sort_order ?? 0}
+          name          = ${body.name ?? ''},
+          lat           = ${body.lat ?? 0},
+          lng           = ${body.lng ?? 0},
+          description   = ${body.description ?? ''},
+          date_visit    = ${body.date_visit ?? ''},
+          photo_url     = ${body.photo_url ?? ''},
+          photo_caption = ${body.photo_caption ?? ''},
+          nickname      = ${body.nickname ?? ''},
+          sort_order    = ${body.sort_order ?? 0}
         WHERE id = ${body.id}
       `;
       return NextResponse.json({ ok: true, id: body.id });
     } else {
       const result = await sql`
-        INSERT INTO map_locations (name, lat, lng, description, date_visit, sort_order)
+        INSERT INTO map_locations (name, lat, lng, description, date_visit, photo_url, photo_caption, nickname, sort_order)
         VALUES (
           ${body.name ?? ''}, ${body.lat ?? 0}, ${body.lng ?? 0},
-          ${body.description ?? ''}, ${body.date_visit ?? ''}, ${body.sort_order ?? 0}
+          ${body.description ?? ''}, ${body.date_visit ?? ''},
+          ${body.photo_url ?? ''}, ${body.photo_caption ?? ''},
+          ${body.nickname ?? ''},
+          ${body.sort_order ?? 0}
         ) RETURNING id
       `;
       return NextResponse.json({ ok: true, id: result[0].id });

@@ -558,3 +558,125 @@ body {
 /* Leaflet override — dark map */
 .leaflet-tile { filter: brightness(0.7) saturate(0.8); }
 .leaflet-container { background: #0d0d1a !important; }
+
+/* Custom map pulse pin */
+.map-pulse-pin {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  box-shadow: 0 0 10px rgba(16,185,129,0.8);
+  position: relative;
+}
+.map-pin-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid #10b981;
+  animation: pinPulse 1.8s ease-out infinite;
+  pointer-events: none;
+  opacity: 0;
+}
+@keyframes pinPulse {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* Leaflet polaroid popup override */
+.custom-leaflet-popup .leaflet-popup-content-wrapper {
+  background: #fff !important;
+  color: #333 !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 6px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+}
+.custom-leaflet-popup .leaflet-popup-tip {
+  background: #fff !important;
+}
+.custom-leaflet-popup .leaflet-popup-content {
+  margin: 6px 6px !important;
+}
+.map-popup-polaroid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: 'Inter', sans-serif;
+}
+.map-pop-polaroid-card {
+  background: #fff;
+  padding: 8px 8px 30px;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  position: relative;
+  transform: rotate(-1.5deg);
+}
+.map-pop-polaroid-img-wrap {
+  width: 100%;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+}
+.map-pop-polaroid-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.map-pop-polaroid-caption {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: 'Caveat', cursive;
+  font-size: 1.25rem;
+  color: #111;
+  font-weight: 600;
+}
+.map-pop-polaroid-date {
+  position: absolute;
+  bottom: 0px;
+  right: 8px;
+  font-size: 0.65rem;
+  color: #777;
+  font-weight: 500;
+}
+.map-pop-details {
+  padding: 2px 4px;
+  color: #333;
+}
+.map-pop-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 2px;
+}
+.map-pop-address {
+  font-size: 0.72rem;
+  color: #666;
+  margin-bottom: 4px;
+}
+.map-pop-desc {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #444;
+}
+.map-pop-date-only {
+  font-size: 0.7rem;
+  color: #888;
+  margin-top: 4px;
+}
+
+/* Sidebar address list styling */
+.map-loc-address {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}

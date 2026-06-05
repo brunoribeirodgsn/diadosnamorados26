@@ -54,6 +54,177 @@ function PhotoUpload({ value, onChange, label }) {
   );
 }
 
+// ── Componente de Item do Mapa (Autocomplete + Detalhes) ──────────
+function MapLocationItem({ loc, idx, updateMap, removeMapLoc }) {
+  const [query, setQuery] = useState(loc.name || '');
+  const [suggestions, setSuggestions] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const searchTimeout = useRef(null);
+
+  useEffect(() => {
+    setQuery(loc.name || '');
+  }, [loc.name]);
+
+  const handleSearchChange = (val) => {
+    setQuery(val);
+    updateMap(idx, 'name', val);
+
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+
+    if (!val || val.trim().length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    searchTimeout.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&limit=5&addressdetails=1`);
+        const data = await res.json();
+        setSuggestions(data || []);
+      } catch (e) {
+        console.error("Erro ao buscar localidade:", e);
+      }
+      setSearching(false);
+    }, 600);
+  };
+
+  const selectSuggestion = (s) => {
+    updateMap(idx, 'name', s.display_name);
+    updateMap(idx, 'lat', parseFloat(s.lat));
+    updateMap(idx, 'lng', parseFloat(s.lon));
+    setSuggestions([]);
+  };
+
+  return (
+    <div className="map-adm-item" style={{ marginBottom: 16 }}>
+      <div className="map-adm-body">
+        {/* 1. Foto do local */}
+        <div className="field full">
+          <PhotoUpload
+            value={loc.photo_url || ''}
+            onChange={v => updateMap(idx, 'photo_url', v)}
+            label="Foto do Local (Polaroid)"
+          />
+        </div>
+
+        {/* 2. Autocomplete Local */}
+        <div className="field full suggestions-wrap">
+          <label className="field-lbl">Local (Completar automaticamente)</label>
+          <input
+            className="field-input"
+            type="text"
+            value={query}
+            placeholder="Buscar local (ex: Miguel Pereira, Rio de Janeiro)"
+            onChange={e => handleSearchChange(e.target.value)}
+          />
+          {searching && <div className="suggestion-loading">⏳ Buscando...</div>}
+          {suggestions.length > 0 && (
+            <ul className="suggestions-list">
+              {suggestions.map((s, si) => (
+                <li
+                  key={si}
+                  className="suggestion-item"
+                  onClick={() => selectSuggestion(s)}
+                  title={s.display_name}
+                >
+                  📍 {s.display_name}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Local Selecionado Informativo */}
+        {loc.name && (
+          <div className="field full">
+            <label className="field-lbl">Local Selecionado</label>
+            <div className="info-box" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              📍 {loc.name}
+            </div>
+          </div>
+        )}
+
+        {/* 3. Detalhes da Polaroid */}
+        <div className="field full" style={{ marginTop: 6, borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: 6 }}>
+          <label className="field-lbl" style={{ color: 'var(--adm-purple)' }}>📸 Detalhes da Polaroid</label>
+        </div>
+
+        <div className="field">
+          <label className="field-lbl">Apelido do Local (Opcional)</label>
+          <input
+            className="field-input"
+            type="text"
+            value={loc.nickname || ''}
+            placeholder="Ex: Onde tudo começou"
+            onChange={e => updateMap(idx, 'nickname', e.target.value)}
+          />
+        </div>
+
+        <div className="field">
+          <label className="field-lbl">Texto da Polaroid (Opcional)</label>
+          <input
+            className="field-input"
+            type="text"
+            value={loc.photo_caption || ''}
+            placeholder="Ex: sssss"
+            onChange={e => updateMap(idx, 'photo_caption', e.target.value)}
+          />
+        </div>
+
+        {/* 4. Mensagem e Data */}
+        <div className="field full">
+          <label className="field-lbl">Mensagem</label>
+          <textarea
+            className="field-textarea"
+            rows={2}
+            value={loc.description || ''}
+            placeholder="Nossa viagem dos sonhos."
+            onChange={e => updateMap(idx, 'description', e.target.value)}
+          />
+        </div>
+
+        <div className="field">
+          <label className="field-lbl">Data da Visita</label>
+          <input
+            className="field-input"
+            type="date"
+            value={loc.date_visit || ''}
+            onChange={e => updateMap(idx, 'date_visit', e.target.value)}
+          />
+        </div>
+
+        {/* Coordenadas para visualização */}
+        <div className="field">
+          <label className="field-lbl">Coordenadas (Lat, Lng)</label>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <input
+              className="field-input"
+              type="number"
+              step="0.0001"
+              value={loc.lat || ''}
+              placeholder="Lat"
+              onChange={e => updateMap(idx, 'lat', parseFloat(e.target.value) || 0)}
+              style={{ fontSize: '0.8rem', padding: '6px 10px' }}
+            />
+            <input
+              className="field-input"
+              type="number"
+              step="0.0001"
+              value={loc.lng || ''}
+              placeholder="Lng"
+              onChange={e => updateMap(idx, 'lng', parseFloat(e.target.value) || 0)}
+              style={{ fontSize: '0.8rem', padding: '6px 10px' }}
+            />
+          </div>
+        </div>
+
+      </div>
+      <button className="btn btn-danger" style={{ marginTop: 14 }} onClick={() => removeMapLoc(idx, loc.id)}>🗑 Excluir Local</button>
+    </div>
+  );
+}
+
 // ── Página Admin ──────────────────────────────────────────────────
 export default function Admin() {
   const [authed,  setAuthed]  = useState(false);
@@ -159,7 +330,7 @@ export default function Admin() {
   const updateGallery = (idx, key, val) => setGallery(g => g.map((x,i) => i===idx ? {...x,[key]:val} : x));
 
   // ── Map helpers ────────────────────────────────────────────────
-  const addMapLoc = () => setMapLocs(m => [...m, { name:'', lat:'', lng:'', description:'', date_visit:'', sort_order: m.length }]);
+  const addMapLoc = () => setMapLocs(m => [...m, { name:'', lat:0, lng:0, description:'', date_visit:'', photo_url:'', photo_caption:'', nickname:'', sort_order: m.length }]);
   const removeMapLoc = async (idx, id) => {
     if (id) { await fetch('/api/map', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) }); }
     setMapLocs(m => m.filter((_,i) => i!==idx));
@@ -488,42 +659,16 @@ export default function Admin() {
               </div>
               <div className="map-list">
                 {mapLocs.map((loc, idx) => (
-                  <div key={idx} className="map-adm-item">
-                    <div className="map-adm-body">
-                      <div className="field full">
-                        <label className="field-lbl">Nome do local</label>
-                        <input className="field-input" type="text" value={loc.name||''} placeholder="Ex: Onde nos conhecemos"
-                          onChange={e => updateMap(idx,'name',e.target.value)} />
-                      </div>
-                      <div className="field">
-                        <label className="field-lbl">Latitude</label>
-                        <input className="field-input" type="number" value={loc.lat||''} placeholder="-23.5505"
-                          step="0.0001" onChange={e => updateMap(idx,'lat',parseFloat(e.target.value))} />
-                      </div>
-                      <div className="field">
-                        <label className="field-lbl">Longitude</label>
-                        <input className="field-input" type="number" value={loc.lng||''} placeholder="-46.6333"
-                          step="0.0001" onChange={e => updateMap(idx,'lng',parseFloat(e.target.value))} />
-                      </div>
-                      <div className="field full">
-                        <label className="field-lbl">Descrição (opcional)</label>
-                        <input className="field-input" type="text" value={loc.description||''} placeholder="O que aconteceu aqui"
-                          onChange={e => updateMap(idx,'description',e.target.value)} />
-                      </div>
-                      <div className="field">
-                        <label className="field-lbl">Data da visita</label>
-                        <input className="field-input" type="date" value={loc.date_visit||''}
-                          onChange={e => updateMap(idx,'date_visit',e.target.value)} />
-                      </div>
-                    </div>
-                    <button className="btn btn-danger" style={{marginTop:4}} onClick={() => removeMapLoc(idx,loc.id)}>🗑</button>
-                  </div>
+                  <MapLocationItem
+                    key={idx}
+                    loc={loc}
+                    idx={idx}
+                    updateMap={updateMap}
+                    removeMapLoc={removeMapLoc}
+                  />
                 ))}
               </div>
               <button className="btn btn-ghost" style={{marginTop:16}} onClick={addMapLoc}>➕ Adicionar Local</button>
-              <div className="info-box" style={{marginTop:16}}>
-                🌍 Para encontrar as coordenadas de um local, acesse <code>maps.google.com</code>, clique com o botão direito no local e copie as coordenadas.
-              </div>
             </div>
           </div>
         )}
