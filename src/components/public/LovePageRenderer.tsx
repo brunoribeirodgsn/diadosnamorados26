@@ -857,9 +857,6 @@ function StarMap({ page }: { page: LovePageDraft }) {
             {dateText ? <p>{dateText}</p> : null}
             {coordinateText ? <p>{coordinateText}</p> : null}
           </div>
-          <button className="mt-12 rounded-full bg-white px-10 py-4 text-xl font-black text-black shadow-[inset_0_-8px_15px_rgba(0,0,0,.18)] transition hover:brightness-110">
-            Próxima Seção
-          </button>
         </FadeUp>
       </div>
     </section>
