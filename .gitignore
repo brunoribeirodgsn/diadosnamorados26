@@ -1,22 +1,8 @@
-# Dependências
-node_modules/
-.next/
-
-# Ambiente (NUNCA fazer commit!)
+.next
+node_modules
 .env
 .env.local
-.env.*.local
-
-# Sistema
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Editor
-.vscode/
-.idea/
-
-# Vercel
 .vercel
-
-.vercel
+dist
+coverage
+*.log

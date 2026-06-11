@@ -1,0 +1,281 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", "Georgia", ui-serif, serif;
+  --background: #0e0910;
+  --foreground: #fff7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(244, 91, 138, 0.22), transparent 34rem),
+    radial-gradient(circle at 82% 4%, rgba(243, 198, 119, 0.18), transparent 30rem),
+    radial-gradient(circle at 50% 80%, rgba(185, 137, 245, 0.12), transparent 28rem),
+    linear-gradient(135deg, #0e0910 0%, #1c0d1a 55%, #130814 100%);
+  color: var(--foreground);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(244, 91, 138, 0.38);
+}
+
+/* ===== Glass Utilities ===== */
+.glass {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(22px);
+}
+
+.glass-strong {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(28px);
+}
+
+.glass-rose {
+  border: 1px solid rgba(244, 91, 138, 0.25);
+  background: rgba(244, 91, 138, 0.08);
+  box-shadow: 0 12px 40px rgba(244, 91, 138, 0.15);
+  backdrop-filter: blur(18px);
+}
+
+/* ===== Scrollbar ===== */
+.soft-scrollbar {
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  scrollbar-width: thin;
+}
+
+.soft-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.soft-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+}
+
+/* ===== Safe Area ===== */
+.phone-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* ===== Keyframe Animations ===== */
+
+@keyframes green-pillar-pulse {
+  0%, 100% { filter: brightness(0.75); }
+  50% { filter: brightness(1.35); }
+}
+
+@keyframes star-twinkle {
+  0%, 100% { transform: scale(0.7) rotate(0deg); opacity: 0.6; }
+  33% { transform: scale(1.6) rotate(10deg); opacity: 1; }
+  66% { transform: scale(0.9) rotate(-5deg); opacity: 0.8; }
+}
+
+@keyframes constellation-draw {
+  from { stroke-dashoffset: 120; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.18); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.12); }
+  70% { transform: scale(1); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-12px) rotate(3deg); }
+  66% { transform: translateY(-6px) rotate(-2deg); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+  50% { transform: translateY(-18px) rotate(8deg) scale(1.08); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 91, 138, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(244, 91, 138, 0); }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100px) rotate(540deg); opacity: 0; }
+}
+
+@keyframes ripple-out {
+  0% { transform: scale(0); opacity: 0.5; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to { background-position: 200% center; }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Animation Classes ===== */
+.green-pillar {
+  animation: green-pillar-pulse 2.6s ease-in-out infinite;
+}
+
+.star-twinkle {
+  animation: star-twinkle 3.2s ease-in-out infinite;
+}
+
+.constellation-line {
+  stroke-dasharray: 120;
+  animation: constellation-draw 5s ease-in-out infinite alternate;
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.8s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2.2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ===== Confetti Pieces ===== */
+.confetti-piece {
+  position: absolute;
+  animation: confetti-fall 1s ease-in forwards;
+}
+
+/* ===== Admin Sidebar ===== */
+.admin-sidebar-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.56);
+}
+
+.admin-sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.88);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.admin-sidebar-item.active {
+  background: rgba(244, 91, 138, 0.14);
+  color: white;
+  border-color: rgba(244, 91, 138, 0.4);
+}
+
+.admin-sidebar-item .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  margin-left: auto;
+  background: rgba(255, 255, 255, 0.2);
+  transition: background 0.2s;
+}
+
+.admin-sidebar-item .dot.filled {
+  background: #34d399;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.5);
+}
+
+/* ===== Input glow effect ===== */
+.input-romantic:focus {
+  border-color: rgba(244, 91, 138, 0.7) !important;
+  box-shadow: 0 0 0 3px rgba(244, 91, 138, 0.12), 0 1px 3px rgba(0,0,0,0.2);
+  outline: none;
+}
+
+/* ===== Gradient text ===== */
+.text-gradient-romantic {
+  background: linear-gradient(135deg, #f45b8a, #f3c677);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ===== Section title decorator ===== */
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #f3c677;
+}

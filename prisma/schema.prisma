@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model LovePage {
+  id                    String         @id @default(cuid())
+  slug                  String         @unique
+  title                 String
+  senderName            String?
+  receiverName          String?
+  relationshipStartDate DateTime?
+  specialDate           DateTime?
+  mainPhrase            String?
+  specialMessage        String?
+  finalMessage          String?
+  coverImageUrl         String?
+  theme                 String?
+  primaryColor          String?
+  secondaryColor        String?
+  timelineEnabled       Boolean        @default(true)
+  timelineTitle         String?
+  timelineSubtitle      String?
+  timelineEndText       String?
+  wrappedSectionEnabled Boolean        @default(true)
+  wrappedTime           String?
+  wrappedTitle          String?
+  wrappedSubtitle       String?
+  wrappedAccentColor    String?
+  mapSectionEnabled     Boolean        @default(true)
+  mapTitle              String?
+  mapSubtitle           String?
+  starSectionEnabled    Boolean        @default(true)
+  starTitle             String?
+  starPhrase            String?
+  starLocation          String?
+  starDateTime          DateTime?
+  starLatitude          Float?
+  starLongitude         Float?
+  isPublished           Boolean        @default(false)
+  views                 Int            @default(0)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  music                 Music?
+  counterText           CounterText?
+  wordGame              WordGame?
+  photos                Photo[]
+  timelineItems         TimelineItem[]
+  mapLocations          MapLocation[]
+}
+
+model Music {
+  id         String   @id @default(cuid())
+  lovePageId String   @unique
+  title      String?
+  artist     String?
+  url        String?
+  thumbnail  String?
+  duration   String?
+  provider   String?
+  lovePage   LovePage @relation(fields: [lovePageId], references: [id], onDelete: Cascade)
+}
+
+model Photo {
+  id         String   @id @default(cuid())
+  lovePageId String
+  url        String
+  caption    String?
+  order      Int      @default(0)
+  isCover    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  lovePage   LovePage @relation(fields: [lovePageId], references: [id], onDelete: Cascade)
+}
+
+model CounterText {
+  id           String   @id @default(cuid())
+  lovePageId   String   @unique
+  title        String?
+  subtitle     String?
+  sinceText    String?
+  messageTitle String?
+  yearsLabel   String?
+  monthsLabel  String?
+  daysLabel    String?
+  hoursLabel   String?
+  minutesLabel String?
+  secondsLabel String?
+  showYears    Boolean  @default(true)
+  showMonths   Boolean  @default(true)
+  showDays     Boolean  @default(true)
+  showHours    Boolean  @default(true)
+  showMinutes  Boolean  @default(true)
+  showSeconds  Boolean  @default(true)
+  lovePage     LovePage @relation(fields: [lovePageId], references: [id], onDelete: Cascade)
+}
+
+model TimelineItem {
+  id           String   @id @default(cuid())
+  lovePageId   String
+  imageUrl     String?
+  date         DateTime?
+  title        String?
+  description  String?
+  photoCaption String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  lovePage     LovePage @relation(fields: [lovePageId], references: [id], onDelete: Cascade)
+}
+
+model WordGame {
+  id             String   @id @default(cuid())
+  lovePageId     String   @unique
+  enabled        Boolean  @default(false)
+  secretWord     String?
+  hint           String?
+  successMessage String?
+  lovePage       LovePage @relation(fields: [lovePageId], references: [id], onDelete: Cascade)
+}
+
+model MapLocation {
+  id            String   @id @default(cuid())
+  lovePageId    String
+  imageUrl      String?
+  placeName     String?
+  placeNickname String?
+  date          DateTime?
+  message       String?
+  polaroidText  String?
+  lat           Float?
+  lng           Float?
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  lovePage      LovePage @relation(fields: [lovePageId], references: [id], onDelete: Cascade)
+}
