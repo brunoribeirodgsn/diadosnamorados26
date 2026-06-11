@@ -1309,19 +1309,12 @@ export function LovePageRenderer({
             </p>
           ) : null}
         </FadeUp>
-        <FadeUp delay={0.15}>
-          {!preview ? (
-            <div className="rounded-2xl bg-white p-3 text-ink shadow-glass inline-block">
-              <QRCodeSVG value={url} size={92} />
-            </div>
-          ) : (
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs text-white/64">
-              <QrCode className="h-3.5 w-3.5" />
-              QR Code aparece na publicação
-            </div>
-          )}
-        </FadeUp>
       </section>
+
+      {/* Footer */}
+      <footer className="w-full pb-10 pt-4 text-center text-xs text-white/30 font-sans tracking-wider">
+        feito com 🤍 por Bruno Ribeiro
+      </footer>
     </main>
   );
 }
