@@ -286,7 +286,7 @@ export function EditorShell() {
             {page.music.thumbnail ? <img src={page.music.thumbnail} alt="" className="h-16 w-16 rounded-2xl object-cover shadow-glass" /> : null}
             <div className="min-w-0">
               <p className="truncate font-bold text-white">{page.music.title}</p>
-              <p className="truncate text-sm text-white/55">{page.music.artist}</p>
+              <p className="truncate text-sm text-white/55">{page.music.artist || page.music.provider || "Nossa música"}</p>
             </div>
           </div>
           <Field label="Foto da capa da música" hint="Esta imagem substitui a capa original no player.">

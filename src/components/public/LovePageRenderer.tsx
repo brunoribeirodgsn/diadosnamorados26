@@ -8,7 +8,6 @@ import {
   ChevronRight,
   Heart,
   MapPin,
-  MessageCircle,
   MoreHorizontal,
   Music,
   Pause,
@@ -23,10 +22,15 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import type { LovePageDraft } from "@/types/love-page";
-import { calculateTogetherTime, cn, isVideoUrl, normalizeWord, publicUrl, romanticShareText } from "@/lib/utils";
-import { RomanticButton } from "@/components/ui/RomanticButton";
+import { calculateTogetherTime, cn, isVideoUrl, normalizeWord, publicUrl } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/States";
+
+const MapPolaroid = dynamic(() => import("@/components/public/MapPolaroid"), {
+  ssr: false,
+  loading: () => <div className="h-96 w-full bg-[#1a1f2e] animate-pulse" />
+});
 
 // ─── Utility helpers ────────────────────────────────────────────────
 
@@ -96,8 +100,12 @@ function formatCoordinate(value?: number | null, positive = "N", negative = "S")
 function seededPoint(seed: string, min: number, max: number) {
   let hash = 0;
   for (let index = 0; index < seed.length; index += 1) {
-    hash = (hash * 31 + seed.charCodeAt(index)) % 9973;
+    hash = ((hash << 5) - hash + seed.charCodeAt(index)) >>> 0;
   }
+  // Extra mixing for better distribution
+  hash ^= hash >>> 16;
+  hash = (Math.imul(hash, 0x45d9f3b)) >>> 0;
+  hash ^= hash >>> 16;
   return min + (hash % (max - min + 1));
 }
 
@@ -316,7 +324,7 @@ function RomanticMusicPlayer({ page }: { page: LovePageDraft }) {
         <div className="mt-5 flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-2xl font-black leading-tight">{music.title}</h2>
-            <p className="mt-1 truncate text-sm text-white/68">{music.artist || "Nossa música"}</p>
+            <p className="mt-1 truncate text-sm text-white/68">{music.artist || music.provider || "Nossa música"}</p>
           </div>
           <CheckCircle2 className="mt-1 h-8 w-8 shrink-0 fill-white text-[#16436f]" />
         </div>
@@ -459,7 +467,13 @@ function MomentsIntro({ page }: { page: LovePageDraft }) {
 
 function StoryGallery({ page }: { page: LovePageDraft }) {
   const [active, setActive] = useState(0);
-  const current = page.photos[active];
+
+  // Clamp active index when photos are removed
+  useEffect(() => {
+    if (page.photos.length > 0 && active >= page.photos.length) {
+      setActive(page.photos.length - 1);
+    }
+  }, [active, page.photos.length]);
 
   useEffect(() => {
     if (page.photos.length < 2) return;
@@ -472,6 +486,8 @@ function StoryGallery({ page }: { page: LovePageDraft }) {
   if (!page.photos.length) {
     return <EmptyState title="Sem fotos ainda" text="Adicione lembranças no editor para preencher a galeria." />;
   }
+
+  const current = page.photos[Math.min(active, page.photos.length - 1)];
 
   function previous() {
     setActive((index) => (index - 1 + page.photos.length) % page.photos.length);
@@ -647,6 +663,55 @@ function JourneyMap({ page }: { page: LovePageDraft }) {
     if (active >= locations.length) setActive(0);
   }, [active, locations.length]);
 
+  const lastLocationsRef = useRef<Record<string, string>>({});
+
+  useEffect(() => {
+    const isSubsequentUpdate = Object.keys(lastLocationsRef.current).length > 0;
+    let changedIndex = -1;
+
+    for (let i = 0; i < locations.length; i++) {
+      const loc = locations[i];
+      const prevStr = lastLocationsRef.current[loc.id];
+      const currentStr = JSON.stringify({
+        lat: loc.lat,
+        lng: loc.lng,
+        imageUrl: loc.imageUrl,
+        placeName: loc.placeName,
+        placeNickname: loc.placeNickname,
+        polaroidText: loc.polaroidText,
+        date: loc.date,
+        message: loc.message
+      });
+
+      if (isSubsequentUpdate) {
+        if (!prevStr || prevStr !== currentStr) {
+          changedIndex = i;
+          break;
+        }
+      }
+    }
+
+    if (changedIndex !== -1) {
+      setActive(changedIndex);
+    }
+
+    // Update reference
+    const nextLocations: Record<string, string> = {};
+    locations.forEach((loc) => {
+      nextLocations[loc.id] = JSON.stringify({
+        lat: loc.lat,
+        lng: loc.lng,
+        imageUrl: loc.imageUrl,
+        placeName: loc.placeName,
+        placeNickname: loc.placeNickname,
+        polaroidText: loc.polaroidText,
+        date: loc.date,
+        message: loc.message
+      });
+    });
+    lastLocationsRef.current = nextLocations;
+  }, [locations]);
+
   if (!locations.length) {
     return <EmptyState title="Mapa esperando lugares" text="Adicione os lugares especiais da história." />;
   }
@@ -660,24 +725,21 @@ function JourneyMap({ page }: { page: LovePageDraft }) {
   }
 
   const hasCoords = activeLocation?.lat && activeLocation?.lng;
-  const mapsUrl = hasCoords
-    ? `https://www.google.com/maps?q=${activeLocation.lat},${activeLocation.lng}&z=14&output=embed`
-    : null;
+  const accentColor = page.primaryColor || "#f45b8a";
 
   return (
     <section className="overflow-hidden bg-[#0d0f14] text-white">
-      {/* Section header */}
+      {/* Header */}
       <FadeUp>
-        <div className="px-5 pb-6 pt-10 text-center">
-          <p className="section-label justify-center"><MapPin className="h-3.5 w-3.5" /> {page.mapTitle || "Nossa Jornada no Mapa"}</p>
-          <h2 className="mt-2 font-serif text-3xl font-bold">{page.mapTitle || "Nossa Jornada no Mapa"}</h2>
-          <p className="mt-2 text-sm text-white/48">{page.mapSubtitle || "Lugares que marcaram nossa história"}</p>
+        <div className="px-5 pb-4 pt-10 text-center">
+          <h2 className="font-serif text-3xl font-bold">{page.mapTitle || "Nossa Jornada no Mapa"}</h2>
+          <p className="mt-1.5 text-sm text-white/48">{page.mapSubtitle || "Lugares que marcaram nossa história"}</p>
         </div>
       </FadeUp>
 
       {/* Location dots navigation */}
       {locations.length > 1 ? (
-        <div className="flex justify-center gap-2 px-5 pb-4">
+        <div className="flex justify-center gap-2 px-5 pb-3">
           {locations.map((loc, index) => (
             <button
               key={loc.id}
@@ -685,66 +747,76 @@ function JourneyMap({ page }: { page: LovePageDraft }) {
               aria-label={loc.placeNickname || loc.placeName || `Lugar ${index + 1}`}
               className={cn(
                 "h-2 rounded-full transition-all duration-300",
-                index === active ? "w-6 bg-[var(--primary)]" : "w-2 bg-white/25 hover:bg-white/45"
+                index === active ? "w-6" : "w-2 bg-white/25 hover:bg-white/45"
               )}
+              style={index === active ? { background: accentColor } : undefined}
             />
           ))}
         </div>
       ) : null}
 
-      {/* Active card */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeLocation?.id}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="px-5 pb-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4 }}
         >
-          {/* Photo */}
-          {activeLocation?.imageUrl ? (
-            <div className="mb-4 overflow-hidden rounded-3xl border border-white/10">
-              {isVideoUrl(activeLocation.imageUrl) ? (
-                <video src={activeLocation.imageUrl} muted playsInline controls className="aspect-[4/3] w-full object-cover" />
-              ) : (
-                <img src={activeLocation.imageUrl} alt="" className="aspect-[4/3] w-full object-cover" />
-              )}
-            </div>
-          ) : null}
+          {/* Leaflet map with polaroid anchored at the exact marker position */}
+          <div className="relative">
+            {hasCoords ? (
+              <div className="relative overflow-hidden">
+                <MapPolaroid
+                  lat={Number(activeLocation.lat)}
+                  lng={Number(activeLocation.lng)}
+                  imageUrl={activeLocation.imageUrl}
+                  polaroidText={activeLocation.polaroidText}
+                  date={activeLocation.date}
+                  accentColor={accentColor}
+                />
+                {/* Gradient overlay at bottom for card blend */}
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0d0f14] to-transparent" />
+              </div>
+            ) : (
+              /* No coords — just show the photo */
+              activeLocation.imageUrl ? (
+                <div className="mx-5 mb-4 overflow-hidden rounded-3xl border border-white/10">
+                  {isVideoUrl(activeLocation.imageUrl) ? (
+                    <video src={activeLocation.imageUrl} muted playsInline controls className="aspect-[4/3] w-full object-cover" />
+                  ) : (
+                    <img src={activeLocation.imageUrl} alt="" className="aspect-[4/3] w-full object-cover" />
+                  )}
+                </div>
+              ) : null
+            )}
+          </div>
 
           {/* Info card */}
-          <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
+          <div className="mx-5 mt-3 rounded-3xl border border-white/10 bg-[#161a22] p-5">
             <div className="flex items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[var(--primary)]/30 bg-[var(--primary)]/14 text-[var(--primary)]">
-                <MapPin className="h-4.5 w-4.5" />
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border text-white"
+                style={{ background: `${accentColor}22`, borderColor: `${accentColor}44`, color: accentColor }}
+              >
+                <MapPin className="h-4 w-4" />
               </span>
               <div className="min-w-0">
-                <h3 className="text-lg font-black leading-tight">
+                <h3 className="truncate text-lg font-black leading-tight">
                   {activeLocation.placeNickname || activeLocation.placeName || "Lugar especial"}
                 </h3>
                 {activeLocation.placeNickname && activeLocation.placeName ? (
                   <p className="mt-0.5 text-xs text-white/45">{activeLocation.placeName}</p>
                 ) : null}
                 {activeLocation.date ? (
-                  <p className="mt-1 text-xs font-semibold text-[var(--secondary)]">{formatShortDate(activeLocation.date)}</p>
+                  <p className="mt-1 text-xs font-semibold" style={{ color: page.secondaryColor || "#f3c677" }}>
+                    {formatShortDate(activeLocation.date)}
+                  </p>
                 ) : null}
               </div>
             </div>
             {activeLocation.message ? (
-              <p className="mt-4 text-sm leading-7 text-white/72">{activeLocation.message}</p>
-            ) : null}
-
-            {/* Map embed if coordinates available */}
-            {hasCoords && mapsUrl ? (
-              <div className="mt-4 overflow-hidden rounded-2xl border border-white/10">
-                <iframe
-                  title={`Mapa - ${activeLocation.placeName}`}
-                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${Number(activeLocation.lng) - 0.02}%2C${Number(activeLocation.lat) - 0.015}%2C${Number(activeLocation.lng) + 0.02}%2C${Number(activeLocation.lat) + 0.015}&layer=mapnik&marker=${activeLocation.lat}%2C${activeLocation.lng}`}
-                  className="h-48 w-full"
-                  loading="lazy"
-                />
-              </div>
+              <p className="mt-4 text-sm leading-7 text-white/72">&ldquo;{activeLocation.message}&rdquo;</p>
             ) : null}
           </div>
         </motion.div>
@@ -752,7 +824,7 @@ function JourneyMap({ page }: { page: LovePageDraft }) {
 
       {/* Navigation */}
       {locations.length > 1 ? (
-        <div className="flex gap-3 px-5 pb-10">
+        <div className="flex gap-3 px-5 py-5">
           <button
             className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/12 bg-white/[0.06] px-4 py-3 text-sm font-bold text-white/80 transition hover:bg-white/10"
             onClick={previous}
@@ -767,7 +839,9 @@ function JourneyMap({ page }: { page: LovePageDraft }) {
             Próximo <ChevronRight className="h-4 w-4" />
           </button>
         </div>
-      ) : null}
+      ) : (
+        <div className="pb-8" />
+      )}
     </section>
   );
 }
@@ -1237,16 +1311,8 @@ export function LovePageRenderer({
         </FadeUp>
         <FadeUp delay={0.15}>
           {!preview ? (
-            <div className="flex flex-wrap gap-3">
-              <a href={`https://wa.me/?text=${romanticShareText(page)}`} target="_blank">
-                <RomanticButton>
-                  <MessageCircle className="h-4 w-4" />
-                  Compartilhar
-                </RomanticButton>
-              </a>
-              <div className="rounded-2xl bg-white p-3 text-ink shadow-glass">
-                <QRCodeSVG value={url} size={92} />
-              </div>
+            <div className="rounded-2xl bg-white p-3 text-ink shadow-glass inline-block">
+              <QRCodeSVG value={url} size={92} />
             </div>
           ) : (
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs text-white/64">
