@@ -851,7 +851,7 @@ function StarMap({ page }: { page: LovePageDraft }) {
         </div>
 
         <FadeUp className="mt-10 text-center" delay={0.2}>
-          <p className="text-3xl font-black leading-[1.35] tracking-[0.18em]">"{phrase} 💥 🤍"</p>
+          <p className="text-3xl font-black leading-[1.35] tracking-[0.18em]">&ldquo;{phrase} 💥 🤍&rdquo;</p>
           <div className="mt-8 space-y-3 text-sm uppercase tracking-[0.22em] text-white/58">
             <p>{location}</p>
             {dateText ? <p>{dateText}</p> : null}
@@ -1204,7 +1204,7 @@ export function LovePageRenderer({
                 className="pointer-events-none absolute -left-2 -top-4 font-serif text-[120px] font-black leading-none opacity-10 select-none"
                 style={{ color: primaryColor }}
               >
-                "
+                &ldquo;
               </span>
               <p className="relative z-10 font-serif text-xl leading-9 text-white">
                 {page.specialMessage}
@@ -1213,7 +1213,7 @@ export function LovePageRenderer({
                 className="pointer-events-none absolute -bottom-10 -right-2 font-serif text-[120px] font-black leading-none opacity-10 select-none"
                 style={{ color: secondaryColor }}
               >
-                "
+                &rdquo;
               </span>
             </div>
           </FadeUp>
